@@ -20,8 +20,10 @@ else
     sudo useradd -m -s /bin/bash "$DEPLOY_USER"
 fi
 
-# Add to audio group
+# Add to groups
 sudo usermod -aG audio "$DEPLOY_USER"
+sudo usermod -aG tty "$DEPLOY_USER"
+sudo usermod -aG video "$DEPLOY_USER"
 
 # Setup SSH keys directory if not exists
 sudo -u "$DEPLOY_USER" mkdir -p /home/$DEPLOY_USER/.ssh
@@ -50,8 +52,12 @@ fi
 # 5. Setup sudoers for service restart and logging
 echo ">>> Configuring sudoers for seamless operations..."
 SUDO_FILE="/etc/sudoers.d/raspi-ai"
+# Clean up old style file if it exists
+sudo rm -f "/etc/sudoers.d/raspi-ai-restart"
 cat << EOF | sudo tee "$SUDO_FILE" > /dev/null
 $DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart raspi-ai
+$DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop raspi-ai
+$DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl start raspi-ai
 $DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl status raspi-ai
 $DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/journalctl -u raspi-ai*
 $DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /opt/raspi-ai/*
@@ -61,8 +67,10 @@ sudo chmod 440 "$SUDO_FILE"
 # 6. Setup udev rule for tty1 permissions
 echo ">>> Setting up udev rule for /dev/tty1..."
 UDEV_FILE="/etc/udev/rules.d/99-raspi-ai-tty.rules"
-echo 'KERNEL=="tty1", GROUP="tty", MODE="0660"' | sudo tee "$UDEV_FILE" > /dev/null
+echo 'SUBSYSTEM=="tty", KERNEL=="tty1", GROUP="tty", MODE="0660"' | sudo tee "$UDEV_FILE" > /dev/null
 sudo udevadm control --reload-rules && sudo udevadm trigger --action=add /dev/tty1
+# Direct chmod as fallback
+sudo chmod 660 /dev/tty1
 
 echo ">>> Provisioning Complete!"
 echo "Next step: Install systemd service using 'config/raspi-ai.service' available in the repo."
