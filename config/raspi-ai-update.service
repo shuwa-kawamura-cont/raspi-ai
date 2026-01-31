@@ -1,0 +1,12 @@
+[Unit]
+Description=Pull latest raspi-ai code and restart service when needed
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+ExecStart=/opt/raspi-ai/app/scripts/pull_latest.sh
+WorkingDirectory=/opt/raspi-ai/app
+Nice=10
