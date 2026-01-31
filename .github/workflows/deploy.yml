@@ -1,0 +1,39 @@
+name: raspi-auto-deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.PI_SSH_KEY }}
+          known_hosts: unnecessary
+          if_key_exists: replace
+
+      - name: Add Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.PI_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Raspberry Pi
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'scripts' \
+            --exclude 'SETUP.md' \
+            --exclude 'DEPLOY.md' \
+            app/ ${{ secrets.PI_USERNAME || 'deploy' }}@${{ secrets.PI_HOST }}:/opt/raspi-ai/app/
+
+      - name: Restart Service
+        run: |
+          ssh ${{ secrets.PI_USERNAME || 'deploy' }}@${{ secrets.PI_HOST }} "sudo systemctl restart raspi-ai"

@@ -1,0 +1,17 @@
+[Unit]
+Description=raspi-ai python bot
+After=network-online.target sound.target
+
+[Service]
+Type=simple
+User=deploy
+Group=audio
+WorkingDirectory=/opt/raspi-ai/app
+ExecStart=/opt/raspi-ai/app/run.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
