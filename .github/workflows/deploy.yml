@@ -23,6 +23,11 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.PI_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Test SSH Connection
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.PI_USERNAME || 'deploy' }}@${{ secrets.PI_HOST }} "echo 'SSH connection successful'"
 
       - name: Deploy to Raspberry Pi
         run: |
@@ -32,8 +37,9 @@ jobs:
             --exclude 'scripts' \
             --exclude 'SETUP.md' \
             --exclude 'DEPLOY.md' \
+            -e "ssh -o StrictHostKeyChecking=no" \
             app/ ${{ secrets.PI_USERNAME || 'deploy' }}@${{ secrets.PI_HOST }}:/opt/raspi-ai/app/
 
       - name: Restart Service
         run: |
-          ssh ${{ secrets.PI_USERNAME || 'deploy' }}@${{ secrets.PI_HOST }} "sudo systemctl restart raspi-ai"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.PI_USERNAME || 'deploy' }}@${{ secrets.PI_HOST }} "sudo systemctl restart raspi-ai"
