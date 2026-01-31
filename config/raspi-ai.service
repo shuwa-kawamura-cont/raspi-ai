@@ -14,7 +14,8 @@ RestartSec=5
 StandardOutput=journal
 StandardError=journal
 Environment=PYTHONUNBUFFERED=1
-Environment=RASPI_AI_MEDIA_TEST=0
+Environment=RASPI_AI_MEDIA_TEST=1
+Environment=DISPLAY=:0
 
 [Install]
 WantedBy=multi-user.target

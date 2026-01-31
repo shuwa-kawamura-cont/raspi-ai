@@ -34,8 +34,19 @@ def run_command(cmd, description):
 
 
 def show_display_test():
-    if DISPLAY_COMMAND:
-        return run_command(shlex.split(DISPLAY_COMMAND), "Custom display command")
+    zenity = shutil.which("zenity")
+    if zenity and os.getenv("DISPLAY"):
+        cmd = [
+            zenity,
+            "--info",
+            "--text",
+            DISPLAY_MESSAGE,
+            "--timeout",
+            os.getenv("RASPI_AI_DISPLAY_DURATION", "10"),
+        ]
+        # Run in background to not block the bot
+        subprocess.Popen(cmd, env={**os.environ, "DISPLAY": ":0"})
+        print("Triggered zenity info dialog on DISPLAY :0", flush=True)
 
     if DISPLAY_TTY.exists():
         try:
