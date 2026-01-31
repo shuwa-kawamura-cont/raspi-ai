@@ -6,6 +6,7 @@ After=network-online.target sound.target
 Type=simple
 User=deploy
 Group=audio
+SupplementaryGroups=tty
 WorkingDirectory=/opt/raspi-ai/app
 ExecStart=/opt/raspi-ai/app/run.sh
 Restart=always

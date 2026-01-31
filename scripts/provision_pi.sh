@@ -47,13 +47,22 @@ else
     echo ">>> venv already exists."
 fi
 
-# 5. Setup sudoers for service restart
-echo ">>> Configuring sudoers for seamless restart..."
-SUDO_FILE="/etc/sudoers.d/raspi-ai-restart"
-if [ ! -f "$SUDO_FILE" ]; then
-    echo "$DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart raspi-ai" | sudo tee "$SUDO_FILE" > /dev/null
-    sudo chmod 440 "$SUDO_FILE"
-fi
+# 5. Setup sudoers for service restart and logging
+echo ">>> Configuring sudoers for seamless operations..."
+SUDO_FILE="/etc/sudoers.d/raspi-ai"
+cat << EOF | sudo tee "$SUDO_FILE" > /dev/null
+$DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart raspi-ai
+$DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl status raspi-ai
+$DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/journalctl -u raspi-ai*
+$DEPLOY_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /opt/raspi-ai/*
+EOF
+sudo chmod 440 "$SUDO_FILE"
+
+# 6. Setup udev rule for tty1 permissions
+echo ">>> Setting up udev rule for /dev/tty1..."
+UDEV_FILE="/etc/udev/rules.d/99-raspi-ai-tty.rules"
+echo 'KERNEL=="tty1", GROUP="tty", MODE="0660"' | sudo tee "$UDEV_FILE" > /dev/null
+sudo udevadm control --reload-rules && sudo udevadm trigger --action=add /dev/tty1
 
 echo ">>> Provisioning Complete!"
 echo "Next step: Install systemd service using 'config/raspi-ai.service' available in the repo."
