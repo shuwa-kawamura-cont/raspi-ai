@@ -78,3 +78,23 @@ This project now performs pull-based deployments: the Raspberry Pi periodically 
 3. `sudo systemctl daemon-reload && sudo systemctl restart raspi-ai-update.timer`
 
 これで pull 成功時は ✅、失敗時は ❌ を含むメッセージが指定チャンネルに送信され、必要なら無変更（no-op）時の通知も制御できます。
+
+### Display & Audio Smoke Test
+`app/main.py` にはメディア動作確認モードを追加しています。デプロイパイプラインを試験したいときは、`raspi-ai.service` に以下の環境変数を設定してください。
+
+```
+[Service]
+Environment=RASPI_AI_MEDIA_TEST=1
+# オプション:
+# Environment=RASPI_AI_MEDIA_TEST_EXIT=1         # テスト後にプロセス終了
+# Environment=RASPI_AI_DISPLAY_TTY=/dev/tty1     # 文字列を表示したい TTY
+# Environment=RASPI_AI_DISPLAY_MESSAGE="Hello"   # TTY に流すメッセージ
+# Environment=RASPI_AI_AUDIO_SAMPLE=/path/file   # `aplay` で再生する WAV
+# Environment=RASPI_AI_AUDIO_COMMAND="speaker-test -t sine -f 660 -l 1"
+# Environment=RASPI_AI_DISPLAY_COMMAND="ffplay -autoexit -f lavfi -i testsrc -t 5"
+```
+
+1. `sudo systemctl edit raspi-ai.service` で上記設定を追加。
+2. `sudo systemctl daemon-reload && sudo systemctl restart raspi-ai`.
+3. `journalctl -u raspi-ai -f` で `Media test passed.` を確認。TTY にメッセージが出力され、オーディオが再生されます（`/usr/share/sounds/alsa/Front_Center.wav` が既定）。
+4. テスト完了後は `RASPI_AI_MEDIA_TEST` を削除して再起動すれば通常動作に戻ります。
