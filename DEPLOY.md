@@ -60,4 +60,21 @@ This project now performs pull-based deployments: the Raspberry Pi periodically 
   - `RASPI_AI_BRANCH` – branch to track (default `main`).
   - `RASPI_AI_SERVICE_NAME` – service name to restart (default `raspi-ai`).
   - `RASPI_AI_LOCK_FILE` – custom lock to coordinate parallel runs.
+  - `RASPI_AI_SLACK_WEBHOOK` – Incoming Webhook URL for deployment notifications.
+  - `RASPI_AI_SLACK_CHANNEL` – Channel override (e.g. `#raspi-ai-deploy`).
+  - `RASPI_AI_SLACK_USERNAME` / `RASPI_AI_SLACK_ICON` – Customize display name or emoji/icon.
+  - `RASPI_AI_SLACK_NOTIFY_ON_SUCCESS` / `RASPI_AI_SLACK_NOTIFY_ON_FAILURE` / `RASPI_AI_SLACK_NOTIFY_ON_NOOP` – toggle notifications (`true`/`false` as strings).
 - To change the polling cadence, adjust `OnBootSec` and `OnUnitActiveSec` inside `config/raspi-ai-update.timer`.
+
+### Slack Webhook Example
+1. Slack で Incoming Webhook を作成して URL をコピーする。
+2. Pi 上で `sudo systemctl edit raspi-ai-update.service` を実行し、以下のように環境変数を設定する。
+   ```
+   [Service]
+   Environment=RASPI_AI_SLACK_WEBHOOK=https://hooks.slack.com/services/XXX/YYY/ZZZ
+   Environment=RASPI_AI_SLACK_CHANNEL=#raspi-ai-deploy
+   Environment=RASPI_AI_SLACK_NOTIFY_ON_NOOP=false
+   ```
+3. `sudo systemctl daemon-reload && sudo systemctl restart raspi-ai-update.timer`
+
+これで pull 成功時は ✅、失敗時は ❌ を含むメッセージが指定チャンネルに送信され、必要なら無変更（no-op）時の通知も制御できます。
