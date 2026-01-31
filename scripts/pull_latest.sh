@@ -28,7 +28,6 @@ send_slack() {
 
     if ! python3 - "$SLACK_WEBHOOK" "$text" "$SLACK_USERNAME" "$SLACK_ICON" "$SLACK_CHANNEL" <<'PY'; then
         echo "Failed to send Slack notification" >&2
-    fi
 import json
 import sys
 import urllib.request
