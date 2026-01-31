@@ -72,5 +72,19 @@ sudo udevadm control --reload-rules && sudo udevadm trigger --action=add /dev/tt
 # Direct chmod as fallback
 sudo chmod 660 /dev/tty1
 
+# 7. Authorize deploy user for X11 if GUI is present
+echo ">>> Authorizing '$DEPLOY_USER' for X11 display :0..."
+if [ -d "/home/pi" ]; then
+    # Add xhost to pi's autostart for persistence (LXDE-pi)
+    AUTOSTART="/etc/xdg/lxsession/LXDE-pi/autostart"
+    if [ -f "$AUTOSTART" ]; then
+        if ! grep -q "xhost +SI:localuser:$DEPLOY_USER" "$AUTOSTART"; then
+            echo "@xhost +SI:localuser:$DEPLOY_USER" | sudo tee -a "$AUTOSTART" > /dev/null
+        fi
+    fi
+    # Apply immediately
+    sudo -u pi DISPLAY=:0 xhost +SI:localuser:"$DEPLOY_USER" 2>/dev/null || true
+fi
+
 echo ">>> Provisioning Complete!"
 echo "Next step: Install systemd service using 'config/raspi-ai.service' available in the repo."

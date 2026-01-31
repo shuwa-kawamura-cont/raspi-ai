@@ -60,6 +60,10 @@ This project now performs pull-based deployments: the Raspberry Pi periodically 
   - `RASPI_AI_BRANCH` – branch to track (default `main`).
   - `RASPI_AI_SERVICE_NAME` – service name to restart (default `raspi-ai`).
   - `RASPI_AI_LOCK_FILE` – custom lock to coordinate parallel runs.
+  - `RASPI_AI_AUDIO_SAMPLE`: Path to wav file (default: `/usr/share/sounds/alsa/Front_Center.wav`)
+  - `RASPI_AI_AUDIO_TONE`: Frequency for sine tone if sample missing (default: `880`)
+  - `RASPI_AI_AUDIO_LOOP`: Set to `1` to loop audio continuously (default: `0`)
+  - `RASPI_AI_MEDIA_TEST`: Set to `1` to run display/audio test on startup
   - `RASPI_AI_SLACK_WEBHOOK` – Incoming Webhook URL for deployment notifications.
   - `RASPI_AI_SLACK_CHANNEL` – Channel override (e.g. `#raspi-ai-deploy`).
   - `RASPI_AI_SLACK_USERNAME` / `RASPI_AI_SLACK_ICON` – Customize display name or emoji/icon.

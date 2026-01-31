@@ -11,11 +11,12 @@ MEDIA_TEST_EXIT = os.getenv("RASPI_AI_MEDIA_TEST_EXIT", "0") == "1"
 DISPLAY_TTY = Path(os.getenv("RASPI_AI_DISPLAY_TTY", "/dev/tty1"))
 DISPLAY_MESSAGE = os.getenv(
     "RASPI_AI_DISPLAY_MESSAGE",
-    "=== DEPLOY TEST SUCCESS ===\nHello Shuwa!\nUpdate time: " + time.ctime() + "\n==========================",
+    "=== AUTO DEPLOY SUCCESS ===\nNow showing on your desktop!\nUpdate time: " + time.ctime() + "\n==========================",
 )
 DISPLAY_COMMAND = os.getenv("RASPI_AI_DISPLAY_COMMAND")
 AUDIO_COMMAND = os.getenv("RASPI_AI_AUDIO_COMMAND")
 AUDIO_SAMPLE = os.getenv("RASPI_AI_AUDIO_SAMPLE", "/usr/share/sounds/alsa/Front_Center.wav")
+AUDIO_LOOP = os.getenv("RASPI_AI_AUDIO_LOOP", "0") == "1"
 
 
 def run_command(cmd, description):
@@ -78,12 +79,45 @@ def show_display_test():
     return False
 
 
+def play_audio(cmd, description, loop=False):
+    if loop:
+        try:
+            # Use Popen for looping so it doesn't block
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            print(f"Started looping {description} in background.", flush=True)
+            return True
+        except Exception as exc:
+            print(f"Failed to start looping {description}: {exc}", flush=True)
+            return False
+    return run_command(cmd, description)
+
+
 def play_audio_test():
     if AUDIO_COMMAND:
-        return run_command(shlex.split(AUDIO_COMMAND), "Custom audio command")
+        return play_audio(shlex.split(AUDIO_COMMAND), "Custom audio command", loop=AUDIO_LOOP)
 
     sample_path = Path(AUDIO_SAMPLE)
+    ffplay = shutil.which("ffplay")
+
+    if AUDIO_LOOP and ffplay:
+        # ffplay is the easiest for looping
+        cmd = [
+            ffplay,
+            "-loop", "0",
+            "-nodisp",
+            "-loglevel", "error",
+        ]
+        if sample_path.exists():
+            cmd.append(str(sample_path))
+        else:
+            cmd.extend(["-f", "lavfi", "-i", f"sine=frequency={os.getenv('RASPI_AI_AUDIO_TONE', '880')}"])
+        
+        return play_audio(cmd, "ffplay loop", loop=True)
+
     if sample_path.exists():
+        # aplay doesn't have a simple loop flag, so if we wanted to loop aplay
+        # we'd need a separate thread. For now, let's keep it simple: 
+        # Looping only supported with ffplay or custom command.
         return run_command(["aplay", str(sample_path)], "aplay sample")
 
     speaker_test = shutil.which("speaker-test")
@@ -91,7 +125,6 @@ def play_audio_test():
         cmd = [speaker_test, "-t", "sine", "-f", os.getenv("RASPI_AI_AUDIO_TONE", "880"), "-l", "1"]
         return run_command(cmd, "speaker-test tone")
 
-    ffplay = shutil.which("ffplay")
     if ffplay:
         cmd = [
             ffplay,
