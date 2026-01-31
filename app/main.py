@@ -6,12 +6,12 @@ import sys
 import time
 from pathlib import Path
 
-MEDIA_TEST_ENABLED = os.getenv("RASPI_AI_MEDIA_TEST", "0") == "1"
+MEDIA_TEST_ENABLED = os.getenv("RASPI_AI_MEDIA_TEST", "1") == "1"
 MEDIA_TEST_EXIT = os.getenv("RASPI_AI_MEDIA_TEST_EXIT", "0") == "1"
 DISPLAY_TTY = Path(os.getenv("RASPI_AI_DISPLAY_TTY", "/dev/tty1"))
 DISPLAY_MESSAGE = os.getenv(
     "RASPI_AI_DISPLAY_MESSAGE",
-    "Raspi-AI Display Test\n=====================\nHello from raspi-ai!",
+    "=== DEPLOY TEST SUCCESS ===\nHello Shuwa!\nUpdate time: " + time.ctime() + "\n==========================",
 )
 DISPLAY_COMMAND = os.getenv("RASPI_AI_DISPLAY_COMMAND")
 AUDIO_COMMAND = os.getenv("RASPI_AI_AUDIO_COMMAND")
