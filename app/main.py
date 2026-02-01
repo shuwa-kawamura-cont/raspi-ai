@@ -122,9 +122,6 @@ def play_audio_test():
             "-nodisp",
             "-loglevel", "error",
         ]
-        if AUDIO_DEVICE:
-            cmd.extend(["-af", f"Volume=1.0", "-ao", f"alsa=device={AUDIO_DEVICE}"])
-            # Note: ffplay alsa syntax is a bit different, trial and error or use -device
         
         if sample_path.exists():
             cmd.append(str(sample_path))
