@@ -4,8 +4,8 @@ After=network-online.target sound.target
 
 [Service]
 Type=simple
-User=deploy
-Group=audio
+User=pi
+Group=pi
 SupplementaryGroups=tty
 WorkingDirectory=/opt/raspi-ai/app
 ExecStart=/opt/raspi-ai/app/run.sh
