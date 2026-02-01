@@ -17,6 +17,8 @@ Environment=PYTHONUNBUFFERED=1
 Environment=RASPI_AI_MEDIA_TEST=1
 Environment=DISPLAY=:0
 Environment=RASPI_AI_AUDIO_LOOP=1
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=RASPI_AI_AUDIO_DEVICE=hw:0,0
 
 [Install]
 WantedBy=multi-user.target

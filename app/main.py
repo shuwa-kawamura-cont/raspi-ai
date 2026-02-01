@@ -135,10 +135,16 @@ def play_audio_test():
 
     if sample_path.exists():
         cmd = ["aplay"]
-        if AUDIO_DEVICE:
-            cmd.extend(["-D", AUDIO_DEVICE])
+        # Try pulse/default first if no device specified, or use the specified one
+        effective_device = AUDIO_DEVICE if AUDIO_DEVICE else "default"
+        cmd.extend(["-D", effective_device])
         cmd.append(str(sample_path))
-        return run_command(cmd, f"aplay sample ({dev_desc})")
+        
+        # If it fails, we'll try 'pulse' explicitly as a fallback
+        if not run_command(cmd, f"aplay sample ({effective_device})"):
+            print("Retrying with 'pulse' device...", flush=True)
+            return run_command(["aplay", "-D", "pulse", str(sample_path)], "aplay sample (pulse fallback)")
+        return True
 
     speaker_test = shutil.which("speaker-test")
     if speaker_test:
